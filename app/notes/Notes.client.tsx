@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import { fetchNotes } from "@/lib/api";
 import SearchBox from "@/components/SearchBox/SearchBox";
@@ -26,7 +26,8 @@ export default function NotesClient() {
   const { data, isLoading } = useQuery({
     queryKey: ["notes", page, debouncedSearch],
     queryFn: () => fetchNotes(page, debouncedSearch),
-    refetchOnMount: false,
+    
+    placeholderData: keepPreviousData,
   });
 
   return (
@@ -38,14 +39,14 @@ export default function NotesClient() {
         </button>
       </div>
 
-      {isLoading ? (
-        <p>Loading notes...</p>
+      {isLoading && !data ? (
+        <p>Loading, please wait...</p>
       ) : (
         <>
           <NoteList notes={data?.notes || []} />
           <Pagination
             pageCount={data?.totalPages || 1}
-            currentPage={page}
+            currentPage={page} 
             onPageChange={(p: { selected: number }) => setPage(p.selected + 1)}
           />
         </>
