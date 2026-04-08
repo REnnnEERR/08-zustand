@@ -13,8 +13,10 @@ export const Modal = ({ children, onClose }: ModalProps) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    setMounted(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  setMounted(true); 
+  
+  document.body.style.overflow = "hidden";
     
     let root = document.getElementById('modal-root');
     if (!root) {

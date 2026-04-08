@@ -4,7 +4,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "@/lib/api";
-import { NoteTag } from "@/types/note"; // Переконайся, що цей шлях вірний
+import { NoteTag } from "@/types/note"; 
 import css from "./NoteForm.module.css";
 
 interface NoteFormProps {
@@ -12,7 +12,7 @@ interface NoteFormProps {
   onSuccess: () => void;
 }
 
-// Описуємо структуру значень форми для Formik
+
 interface FormValues {
   title: string;
   content: string;
@@ -33,23 +33,22 @@ const NoteForm = ({ onCancel, onSuccess }: NoteFormProps) => {
   const mutation = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
-      // Оновлюємо кеш нотаток
+      
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      // Викликаємо пропс для закриття модалки
+      
       onSuccess();
     },
   });
 
   const formik = useFormik<FormValues>({
-    initialValues: {
-      title: "",
-      content: "",
-      tag: "Personal" as NoteTag, // Явно кажемо, що це наш тип
+  initialValues: {
+    title: "",
+    content: "",
+    tag: "Personal" as NoteTag,
     },
     validationSchema,
     onSubmit: (values) => {
-      // Тепер тут не треба ніяких "as any", бо типи збігаються
-      mutation.mutate(values);
+    mutation.mutate(values);
     },
   });
 
