@@ -1,52 +1,56 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api"; 
-import css from "./Notes.module.css"; // Переконайся, що файл називається саме так
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { fetchNotes } from '@/lib/api';
+import SearchBox from '@/components/SearchBox/SearchBox';
+import { Pagination } from '@/components/Pagination/Pagination';
+import NoteList from '@/components/NoteList/NoteList';
+import Modal from '@/components/Modal/Modal';
+import NoteForm from '@/components/NoteForm/NoteForm';
+import css from './Notes.module.css';
 
-export default function NoteDetailsClient() {
-  const params = useParams();
-  // Безпечно дістаємо ID
-  const noteId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+export default function NotesClient() {
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: note, isLoading, isError } = useQuery({
-    queryKey: ["note", noteId], 
-    queryFn: () => fetchNoteById(noteId as string), 
-    enabled: !!noteId, // Запит не піде, поки id порожній
-    retry: 1, // Не мучити сервер, якщо нотатки немає
+  const { data, isLoading } = useQuery({
+    queryKey: ['notes', page, search],
+    queryFn: () => fetchNotes(page, search), 
+    refetchOnMount: false,
   });
 
-  if (isLoading) {
-    return <p className={css.loading}>Завантаження нотатки...</p>;
-  }
-
-  if (isError || !note) {
-    return (
-      <div className={css.errorContainer}>
-        <p>Упс! Нотатку не знайдено або сталася помилка при завантаженні.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className={css.container}>
-      <article className={css.item}>
-        <header className={css.header}>
-          <h2 className={css.title}>{note.title}</h2>
-          <span className={css.tag}>{note.tag}</span>
-        </header>
-        
-        <div className={css.contentBody}>
-          <p className={css.content}>{note.content}</p>
-        </div>
+    <main className={css.container}>
+      <div className={css.controls}>
+        <SearchBox value={search} onChange={setSearch} />
+        <button onClick={() => setIsModalOpen(true)} className={css.addButton}>
+          Add Note
+        </button>
+      </div>
 
-        <footer className={css.footer}>
-          <p className={css.date}>
-            Створено: {note.createdAt ? new Date(note.createdAt).toLocaleString('uk-UA') : "Дата невідома"}
-          </p>
-        </footer>
-      </article>
-    </div>
+      {isLoading ? (
+        <p>Завантажую нотатки...</p>
+      ) : (
+        <>
+          <NoteList notes={data?.notes || []} />
+          <Pagination 
+            pageCount={data?.totalPages || 1} 
+            currentPage={page} 
+            onPageChange={(p) => setPage(p.selected + 1)} 
+          />
+        </>
+      )}
+
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm 
+            onSuccess={() => setIsModalOpen(false)} 
+            onCancel={() => setIsModalOpen(false)} 
+          />
+        </Modal>
+      )}
+    </main>
   );
 }

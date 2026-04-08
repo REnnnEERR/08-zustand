@@ -1,12 +1,10 @@
-// 
-
-export type NoteTag = 'Work' | 'Personal' | 'Home' | 'Other'; // або ті теги, які використовує API
+export type NoteTag = 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
 
 export interface Note {
   id: string;
   title: string;
   content: string;
-  tag: NoteTag; // або просто string, якщо не хочеш морочитися з юніоном
+  tag: NoteTag;
   createdAt: string;
   updatedAt: string;
 }

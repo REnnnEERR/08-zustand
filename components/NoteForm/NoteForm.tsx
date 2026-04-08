@@ -9,8 +9,9 @@ import { createNote } from '@/lib/api';
 import toast from 'react-hot-toast'; 
 
 interface NoteFormProps {
-  // Знак питання робить проп необов'язковим, щоб не було помилки Property missing
+ 
   onCancel?: () => void;
+  onSuccess: () => void;
 }
 
 export interface NoteFormValues {
@@ -52,7 +53,6 @@ const NoteForm = ({ onCancel }: NoteFormProps) => {
     tag: 'Todo' as NoteTag,
   };
 
-  // Використовуємо FormikHelpers замість any для типізації методів форми
   const handleSubmit = (values: NoteFormValues, { resetForm }: FormikHelpers<NoteFormValues>) => {
     mutate(values);
     resetForm();

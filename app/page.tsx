@@ -1,4 +1,4 @@
-import css from "./page.module.css"; // Скопіюй сюди стилі для Home
+import css from "./page.module.css";
 
 export default function HomePage() {
   return (

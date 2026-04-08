@@ -7,9 +7,10 @@ interface PaginationProps {
   pageCount: number;
   currentPage: number; 
   onPageChange: (selectedItem: { selected: number }) => void;
+
 }
 
-export const Pagination = ({ pageCount, currentPage, onPageChange }: PaginationProps) => {
+export const Pagination = ({ pageCount, currentPage, onPageChange}: PaginationProps) => {
   return (
     <ReactPaginate
       forcePage={currentPage - 1} 

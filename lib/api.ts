@@ -28,7 +28,7 @@ export const fetchNotes = async (
   return response.data;
 };
 
-// Створення нової нотатки
+
 export const createNote = async (
   noteData: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<Note> => {
