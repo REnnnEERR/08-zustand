@@ -1,0 +1,42 @@
+.title {
+    font-size: 120px;
+    margin: 0;
+    font-weight: 900;
+    letter-spacing: -5px;
+    background: linear-gradient(90deg, #ff8a00, #060606);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(4px 4px 0px rgba(0, 0, 0, 0.1));
+    text-align: center;
+}
+
+
+.description {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-size: 1.5rem;
+    color: #333;
+    margin: 20px 0;
+    text-align: center;
+    font-weight: 300;
+}
+
+
+.description+a {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 30px;
+    background-color: #000;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.description+a:hover {
+    background-color: #8d4521;
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(229, 46, 113, 0.3);
+}

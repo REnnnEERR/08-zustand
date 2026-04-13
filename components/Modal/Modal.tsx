@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import css from './Modal.module.css';
 
@@ -10,15 +10,10 @@ interface ModalProps {
 }
 
 export const Modal = ({ children, onClose }: ModalProps) => {
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  setMounted(true); 
-  
-  document.body.style.overflow = "hidden";
-    
     let root = document.getElementById('modal-root');
+
     if (!root) {
       root = document.createElement('div');
       root.setAttribute('id', 'modal-root');
@@ -39,7 +34,8 @@ export const Modal = ({ children, onClose }: ModalProps) => {
     };
   }, [onClose]);
 
-  if (!mounted) return null;
+  // 🔥 головна фішка — перевірка на client
+  if (typeof window === 'undefined') return null;
 
   const modalRoot = document.getElementById('modal-root');
   if (!modalRoot) return null;

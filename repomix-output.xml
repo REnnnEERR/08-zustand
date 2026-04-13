@@ -1,10 +1,10 @@
-This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
 
 <file_summary>
 This section contains a summary of this file.
 
 <purpose>
-This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+This file contains a packed representation of the entire repository's contents.
 It is designed to be easily consumable by AI systems for analysis, code review,
 or other automated processes.
 </purpose>
@@ -32,7 +32,6 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Files matching these patterns are excluded: node_modules, .next, dist, package-lock.json
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -45,14 +44,19 @@ The content is organized as follows:
 app/globals.css
 app/layout.tsx
 app/loading.tsx
+app/not-found.tsx
 app/notes/[id]/error.tsx
 app/notes/[id]/NoteDetails.client.tsx
 app/notes/[id]/NoteDetails.module.css
 app/notes/[id]/page.tsx
 app/notes/error.tsx
+app/notes/filter/[...slug]/page.tsx
+app/notes/filter/@sidebar/page.tsx
+app/notes/filter/layout.tsx
 app/notes/Notes.client.tsx
 app/notes/Notes.module.css
 app/notes/page.tsx
+app/NotFound.module.css
 app/page.module.css
 app/page.tsx
 components/Footer/Footer.module.css
@@ -92,6 +96,149 @@ types/note.ts
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="app/not-found.tsx">
+import Link from 'next/link';
+import css from './NotFound.module.css';
+
+const NotFound = () => {
+  return (
+    <div>
+      <h1 className={css.title}>404 - Page not found</h1>
+<p className={css.description}>Sorry, the page you are looking for does not exist.</p>
+      <Link href="/">Go back home</Link>
+    </div>
+  );
+};
+
+export default NotFound;
+</file>
+
+<file path="app/notes/filter/[...slug]/page.tsx">
+import { getNotes } from '@/lib/api';
+import NoteList from '@/components/NoteList/NoteList';
+
+type Props = {
+  params: Promise<{ slug: string[] }>;
+};
+
+const NotesByCategory = async ({ params }: Props) => {
+  const { slug } = await params;
+  const tag = slug[0] === 'all' ? undefined : slug[0];
+const notes = await getNotes(tag);
+
+  return (
+    <div>
+      <h1>Notes List</h1>
+      {response?.notes?.length > 0 && <NoteList notes={response.notes} />}
+    </div>
+  );
+};
+
+export default NotesByCategory;
+</file>
+
+<file path="app/notes/filter/@sidebar/page.tsx">
+import Link from 'next/link';
+import css from './SidebarNotes.module.css';
+
+const tags = ['Work', 'Personal', 'Study', 'Health']; // Твої теги
+
+const SidebarNotes = () => {
+  return (
+    <ul className={css.menuList}>
+      <li className={css.menuItem}>
+        <Link href={`/notes/filter/Work`} className={css.menuLink}>Work</Link>
+          </li>
+          <li className={css.menuItem}>
+        <Link href={`/notes/filter/Personal`} className={css.menuLink}>Personal</Link>
+          </li>
+          <li className={css.menuItem}>
+        <Link href={`/notes/filter/Todo`} className={css.menuLink}>Todo</Link>
+          </li>
+          <li className={css.menuItem}>
+        <Link href={`/notes/filter/Meeting`} className={css.menuLink}>Meeting</Link>
+          </li>
+          <li className={css.menuItem}>
+        <Link href={`/notes/filter/Shopping`} className={css.menuLink}>Shopping</Link>
+      </li>
+      {tags.map((tag) => (
+        <li key={tag} className={css.menuItem}>
+          <Link href={`/notes/filter/${tag}`} className={css.menuLink}>
+            {tag}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+export default SidebarNotes;
+</file>
+
+<file path="app/notes/filter/layout.tsx">
+import React from 'react';
+
+export default function FilterLayout({
+  children,
+  sidebar,
+}: {
+  children: React.ReactNode;
+  sidebar: React.ReactNode;
+}) {
+  return (
+    <div style={{ display: 'flex', gap: '20px' }}>
+      <aside style={{ width: '250px' }}>{sidebar}</aside>
+      <main style={{ flex: 1 }}>{children}</main>
+    </div>
+  );
+}
+</file>
+
+<file path="app/NotFound.module.css">
+.title {
+    font-size: 120px;
+    margin: 0;
+    font-weight: 900;
+    letter-spacing: -5px;
+    background: linear-gradient(90deg, #ff8a00, #060606);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(4px 4px 0px rgba(0, 0, 0, 0.1));
+    text-align: center;
+}
+
+
+.description {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    font-size: 1.5rem;
+    color: #333;
+    margin: 20px 0;
+    text-align: center;
+    font-weight: 300;
+}
+
+
+.description+a {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 30px;
+    background-color: #000;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.description+a:hover {
+    background-color: #8d4521;
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(229, 46, 113, 0.3);
+}
+</file>
 
 <file path=".gitignore">
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
@@ -137,119 +284,9 @@ yarn-error.log*
 next-env.d.ts
 </file>
 
-<file path="app/globals.css">
-/* :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html {
-  height: 100%;
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-  background-color: black;
-}
-
-body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: black;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-} */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  margin: 0;
-  background-color: #f8f9fa;
-}
-</file>
-
 <file path="app/loading.tsx">
 export default function Loading() {
   return <p>Loading, please wait...</p>;
-}
-</file>
-
-<file path="app/notes/[id]/error.tsx">
-"use client";
-
-// Потрібно явно вказати тип для error
-export default function Error({ error }: { error: Error }) {
-  return (
-    <div>
-      <p>Could not fetch the list of notes. {error.message}</p>
-    </div>
-  );
-}
-</file>
-
-<file path="app/notes/Notes.module.css">
-.app {
-    width: 90%;
-    max-width: 1280px;
-    margin: 0px auto;
-    padding: 0 16px 16px;
-}
-
-.toolbar {
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 0;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.button {
-    padding: 6px 12px;
-    font-size: 16px;
-    color: #fff;
-    background-color: #0d6efd;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.button:hover {
-    background-color: #0b5ed7;
 }
 </file>
 
@@ -1076,33 +1113,82 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 }
 </file>
 
-<file path="app/notes/[id]/NoteDetails.client.tsx">
-// app/notes/[id]/NoteDetails.client.tsx
+<file path="app/globals.css">
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+html {
+  height: 100%;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: black;
+}
+
+body {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: black;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  background-color: #f8f9fa;
+}
+
+#modal-root {
+  position: relative;
+  z-index: 9999;
+}
+</file>
+
+<file path="app/notes/[id]/error.tsx">
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api";
-import css from "./NoteDetails.module.css";
-
-export default function NoteDetailsClient({ id }: { id: string }) {
-  const { data: note, isLoading, error } = useQuery({
-    queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id),
-    refetchOnMount: false,
-    enabled: !!id,
-  });
-
-  if (isLoading) return <p>Завантажую...</p>;
-  if (error || !note) return <p>Сталася помилка.</p>;
-
+export default function Error({ error }: { error: Error }) {
   return (
-    <div className={css.container}>
-      <div className={css.item}>
-        <h2>{note.title}</h2>
-        <span className={css.tag}>{note.tag}</span>
-        <p>{note.content}</p>
-        <p className={css.date}>{new Date(note.createdAt).toLocaleDateString()}</p>
-      </div>
+    <div>
+      <p>Could not fetch note details. {error.message}</p>
     </div>
   );
 }
@@ -1182,6 +1268,40 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
 }
 </file>
 
+<file path="app/notes/Notes.module.css">
+.container {
+    width: 90%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 16px 16px;
+}
+
+.controls {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.addButton {
+    padding: 6px 12px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #0d6efd;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.addButton:hover {
+    background-color: #0b5ed7;
+}
+</file>
+
 <file path="components/Pagination/Pagination.tsx">
 "use client";
 
@@ -1221,6 +1341,38 @@ export const Pagination = ({ pageCount, currentPage, onPageChange}: PaginationPr
     />
   );
 };
+</file>
+
+<file path="app/notes/[id]/NoteDetails.client.tsx">
+// app/notes/[id]/NoteDetails.client.tsx
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api";
+import css from "./NoteDetails.module.css";
+
+export default function NoteDetailsClient({ id }: { id: string }) {
+  const { data: note, isLoading, error } = useQuery({
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
+    refetchOnMount: false,
+    enabled: !!id,
+  });
+
+  if (isLoading) return <p>Loading, please wait...</p>;
+if (error || !note) return <p>Something went wrong.</p>;
+
+  return (
+    <div className={css.container}>
+      <div className={css.item}>
+        <h2>{note.title}</h2>
+        <span className={css.tag}>{note.tag}</span>
+        <p>{note.content}</p>
+        <p className={css.date}>{new Date(note.createdAt).toLocaleDateString()}</p>
+      </div>
+    </div>
+  );
+}
 </file>
 
 <file path="app/notes/page.tsx">
@@ -1361,74 +1513,6 @@ export default function RootLayout({
 }
 </file>
 
-<file path="app/notes/Notes.client.tsx">
-"use client";
-
-import { useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { useDebounce } from "use-debounce";
-import { fetchNotes } from "@/lib/api";
-import SearchBox from "@/components/SearchBox/SearchBox";
-import { Pagination } from "@/components/Pagination/Pagination";
-import NoteList from "@/components/NoteList/NoteList";
-import { Modal } from "@/components/Modal/Modal";
-import NoteForm from "@/components/NoteForm/NoteForm";
-import css from "./Notes.module.css";
-
-export default function NotesClient() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [debouncedSearch] = useDebounce(search, 500);
-
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    setPage(1);
-  };
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["notes", page, debouncedSearch],
-    queryFn: () => fetchNotes(page, debouncedSearch),
-    
-    placeholderData: keepPreviousData,
-  });
-
-  return (
-    <main className={css.container}>
-      <div className={css.controls}>
-        <SearchBox value={search} onChange={handleSearchChange} />
-        <button onClick={() => setIsModalOpen(true)} className={css.addButton}>
-          Add New Note
-        </button>
-      </div>
-
-      {isLoading && !data ? (
-        <p>Loading, please wait...</p>
-      ) : (
-        <>
-          <NoteList notes={data?.notes || []} />
-          <Pagination
-            pageCount={data?.totalPages || 1}
-            currentPage={page} 
-            onPageChange={(p: { selected: number }) => setPage(p.selected + 1)}
-          />
-        </>
-      )}
-
-      {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)}>
-          <NoteForm 
-            onSuccess={() => setIsModalOpen(false)} 
-            onCancel={() => setIsModalOpen(false)} 
-          />
-        </Modal>
-      )}
-    </main>
-  );
-}
-</file>
-
 <file path="components/Modal/Modal.tsx">
 "use client";
 
@@ -1562,14 +1646,88 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
 }
 </file>
 
+<file path="app/notes/Notes.client.tsx">
+"use client";
+
+import { useState } from "react";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
+import { fetchNotes } from "@/lib/api";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import { Pagination } from "@/components/Pagination/Pagination";
+import NoteList from "@/components/NoteList/NoteList";
+import { Modal } from "@/components/Modal/Modal";
+import NoteForm from "@/components/NoteForm/NoteForm";
+import css from "./Notes.module.css";
+
+export default function NotesClient() {
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [debouncedSearch] = useDebounce(search, 500);
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["notes", page, debouncedSearch],
+    queryFn: () => fetchNotes(page, debouncedSearch),
+    placeholderData: keepPreviousData,
+  });
+
+  return (
+    <main className={css.container}>
+      <div className={css.controls}>
+        <SearchBox value={search} onChange={handleSearchChange} />
+        <button onClick={() => setIsModalOpen(true)} className={css.addButton}>
+          Add New Note
+        </button>
+      </div>
+
+      {isLoading && !data ? (
+        <p>Loading, please wait...</p>
+      ) : (
+        <>
+          {data?.notes && data.notes.length > 0 && (
+            <NoteList notes={data.notes} />
+          )}
+
+          {data?.totalPages && data.totalPages > 1 && (
+            <Pagination
+              pageCount={data.totalPages}
+              currentPage={page}
+              onPageChange={(p: { selected: number }) =>
+                setPage(p.selected + 1)
+              }
+            />
+          )}
+        </>
+      )}
+
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm
+            onSuccess={() => setIsModalOpen(false)}
+            onCancel={() => setIsModalOpen(false)}
+          />
+        </Modal>
+      )}
+    </main>
+  );
+}
+</file>
+
 <file path="components/NoteForm/NoteForm.tsx">
 "use client";
 
-import { Formik, Form, Field, ErrorMessage } from "formik"; 
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "@/lib/api";
-import { NoteTag } from "@/types/note"; 
+import { NoteTag } from "@/types/note";
 import css from "./NoteForm.module.css";
 
 interface NoteFormProps {
@@ -1583,12 +1741,11 @@ interface FormValues {
   tag: NoteTag;
 }
 
-
 const validationSchema = Yup.object({
   title: Yup.string().required("Title is required").min(3, "Too short"),
-  content: Yup.string().max(500, "Too long"), 
+  content: Yup.string().max(500, "Too long"),
   tag: Yup.string()
-    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"], "Invalid tag") 
+    .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
     .required("Tag is required"),
 });
 
@@ -1606,7 +1763,7 @@ const NoteForm = ({ onCancel, onSuccess }: NoteFormProps) => {
   const initialValues: FormValues = {
     title: "",
     content: "",
-    tag: "Personal" as NoteTag,
+    tag: "Personal",
   };
 
   return (
@@ -1617,22 +1774,21 @@ const NoteForm = ({ onCancel, onSuccess }: NoteFormProps) => {
     >
       {({ isSubmitting }) => (
         <Form className={css.form}>
-          <div className={css.field}>
+          <div className={css.formGroup}>
             <label htmlFor="title">Title</label>
             <Field name="title" id="title" type="text" className={css.input} />
-            {/* Використовуємо компонент ErrorMessage */}
             <ErrorMessage name="title" component="div" className={css.error} />
           </div>
 
-          <div className={css.field}>
+          <div className={css.formGroup}>
             <label htmlFor="content">Content</label>
             <Field name="content" id="content" as="textarea" className={css.textarea} />
             <ErrorMessage name="content" component="div" className={css.error} />
           </div>
 
-          <div className={css.field}>
+          <div className={css.formGroup}>
             <label htmlFor="tag">Tag</label>
-            <Field name="tag" id="tag" as="select">
+            <Field name="tag" id="tag" as="select" className={css.select}>
               <option value="Todo">Todo</option>
               <option value="Work">Work</option>
               <option value="Personal">Personal</option>
@@ -1643,13 +1799,13 @@ const NoteForm = ({ onCancel, onSuccess }: NoteFormProps) => {
           </div>
 
           <div className={css.actions}>
-            <button type="button" onClick={onCancel} className={css.cancelBtn}>
+            <button type="button" onClick={onCancel} className={css.cancelButton}>
               Cancel
             </button>
             <button
               type="submit"
               disabled={mutation.isPending}
-              className={css.submitBtn}
+              className={css.submitButton}
             >
               {mutation.isPending ? "Saving..." : "Save Note"}
             </button>

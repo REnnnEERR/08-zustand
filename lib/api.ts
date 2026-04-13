@@ -1,7 +1,6 @@
 import axios from 'axios';
 import type { Note } from '../types/note';
 
-// Функція для створення екземпляра Axios
 const getApi = () => {
   return axios.create({
     baseURL: 'https://notehub-public.goit.study/api',
@@ -16,7 +15,15 @@ export interface FetchNotesResponse {
   totalPages: number;
 }
 
-// Отримання списку нотаток
+// 🔥 ДОДАЄМО ОЦЕ
+export const getNotes = async (tag?: string): Promise<FetchNotesResponse> => {
+  const response = await getApi().get<FetchNotesResponse>('/notes', {
+    params: tag ? { tag } : {},
+  });
+  return response.data;
+};
+
+// існуючі функції
 export const fetchNotes = async (
   page: number = 1,
   search: string = '',
@@ -28,7 +35,6 @@ export const fetchNotes = async (
   return response.data;
 };
 
-
 export const createNote = async (
   noteData: Omit<Note, 'id' | 'createdAt' | 'updatedAt'>
 ): Promise<Note> => {
@@ -36,13 +42,11 @@ export const createNote = async (
   return response.data;
 };
 
-// Видалення нотатки
 export const deleteNote = async (noteId: string): Promise<Note> => {
   const response = await getApi().delete<Note>(`/notes/${noteId}`);
   return response.data;
 };
 
-// Отримання однієї нотатки по ID
 export const fetchNoteById = async (id: string): Promise<Note> => {
   const { data } = await getApi().get<Note>(`/notes/${id}`);
   return data;
