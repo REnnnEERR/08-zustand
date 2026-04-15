@@ -52,11 +52,11 @@ app/notes/[id]/page.tsx
 app/notes/@modal/(..)notes/[id]/page.tsx
 app/notes/@modal/default.tsx
 app/notes/@sidebar/default.tsx
-app/notes/@sidebar/filter/[[...slug]]/page.tsx
-app/notes/@sidebar/filter/[[...slug]]/SidebarNotes.module.css
-app/notes/@sidebar/filter/layout.tsx
 app/notes/default.tsx
 app/notes/error.tsx
+app/notes/filter/[[...slug]]/page.tsx
+app/notes/filter/[[...slug]]/SidebarNotes.module.css
+app/notes/filter/layout.tsx
 app/notes/layout.tsx
 app/notes/Notes.client.tsx
 app/notes/Notes.module.css
@@ -84,6 +84,8 @@ components/Pagination/Pagination.module.css
 components/Pagination/Pagination.tsx
 components/SearchBox/SearchBox.module.css
 components/SearchBox/SearchBox.tsx
+components/SidebarNotes/SidebarNotes.module.css
+components/SidebarNotes/SidebarNotes.tsx
 components/TanStackProvider/TanStackProvider.tsx
 eslint.config.mjs
 lib/api.ts
@@ -104,52 +106,33 @@ types/note.ts
 <files>
 This section contains the contents of the repository's files.
 
-<file path="app/notes/@modal/default.tsx">
-export default function Default() {
-  return null;
-}
-</file>
+<file path="app/notes/filter/[[...slug]]/page.tsx">
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
+import { fetchNotes } from "@/lib/api";
+import NotesClient from "@/app/notes/Notes.client";
 
-<file path="app/notes/@sidebar/default.tsx">
-import SidebarNotes from './filter/[[...slug]]/page'; 
-
-export default function Default() {
-  return <SidebarNotes />;
-}
-</file>
-
-<file path="app/notes/@sidebar/filter/[[...slug]]/page.tsx">
-import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
-import { fetchNotes } from '@/lib/api';
-import NotesClient from '@/app/notes/Notes.client';
-
-// Визначаємо тип параметрів чітко за специфікацією Next.js 15
 type Params = Promise<{ slug?: string[] }>;
 
 export default async function FilteredNotesPage(props: { params: Params }) {
   const queryClient = new QueryClient();
-  
-  // Розпаковуємо параметри
-  const { slug } = await props.params;
-  const tag = slug?.[0];
-  const activeTag = tag === 'all' ? undefined : tag;
+  const params = await props.params;
+  const tag = params?.slug?.[0];
+  const activeTag = tag === "all" ? undefined : tag;
 
-  // SSR предфетчинг
   await queryClient.prefetchQuery({
-    queryKey: ['notes', 1, '', activeTag],
-    queryFn: () => fetchNotes(1, '', 12, activeTag),
+    queryKey: ["notes", 1, "", activeTag],
+    queryFn: () => fetchNotes(1, "", 12, activeTag),
   });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      {/* Передаємо проміс у клієнт */}
       <NotesClient params={props.params} />
     </HydrationBoundary>
   );
 }
 </file>
 
-<file path="app/notes/@sidebar/filter/[[...slug]]/SidebarNotes.module.css">
+<file path="app/notes/filter/[[...slug]]/SidebarNotes.module.css">
 .menuList {
     list-style-type: none;
     margin: 0;
@@ -179,128 +162,58 @@ export default async function FilteredNotesPage(props: { params: Params }) {
 }
 </file>
 
-<file path="app/notes/@sidebar/filter/layout.tsx">
-import React from 'react';
-
-export default function FilterLayout({
-  children,
-  sidebar,
-}: {
-  children: React.ReactNode;
-  sidebar: React.ReactNode;
-}) {
-  return (
-    <div style={{ display: 'flex', gap: '20px' }}>
-      <aside style={{ width: '250px' }}>{sidebar}</aside>
-      <main style={{ flex: 1 }}>{children}</main>
-    </div>
-  );
-}
-</file>
-
-<file path="app/notes/default.tsx">
-export default function Default() {
-  return null;
-}
-</file>
-
-<file path="components/NotePreview/NotePreview.module.css">
-.container {
-    max-width: 800px;
-    margin: 32px auto;
-    padding: 24px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-.item {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 8px;
-}
-
-.header h2 {
+<file path="components/SidebarNotes/SidebarNotes.module.css">
+.menuList {
+    list-style-type: none;
     margin: 0;
-    font-size: 28px;
-    color: #333;
+    padding: 0;
 }
 
-.content {
-    font-size: 18px;
-    line-height: 26px;
-    color: #444;
-    white-space: pre-wrap;
+.menuItem {
+    margin-bottom: 8px;
 }
 
-.date {
-    font-size: 14px;
-    color: #888;
-    text-align: right;
-}
-
-.tag {
-    display: inline-block;
-    padding: 4px 8px;
-    font-size: 12px;
-    color: #0d6efd;
-    background-color: #e7f1ff;
-    border: 1px solid #b6d4fe;
-    border-radius: 12px;
-    max-width: 100px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.backBtn {
-    align-self: flex-start;
-    padding: 6px 12px;
-    font-size: 14px;
-    color: #000000;
-    border: none;
+.menuLink {
+    text-decoration: none;
+    color: white;
+    font-size: 16px;
+    display: block;
+    padding: 8px 16px;
+    background-color: #333;
     border-radius: 4px;
-    cursor: pointer;
-    text-decoration: underline;
-    display: inline-block;
-    background-color: transparent;
+    transition: background-color 0.3s ease;
+}
+
+.menuLink:hover {
+    background-color: #444;
+    color: #ddd;
 }
 </file>
 
-<file path="components/NotePreview/NotePreview.tsx">
-import { Note } from "@/types/note";
-import css from "./NotePreview.module.css";
+<file path="components/SidebarNotes/SidebarNotes.tsx">
+import Link from "next/link";
+import css from "./SidebarNotes.module.css";
 
-interface NotePreviewProps {
-  note: Note;
-}
+const TAGS = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
 
-export const NotePreview = ({ note }: NotePreviewProps) => {
+export default function SidebarNotes() {
   return (
-    <div className={css.container}>
-      <div className={css.item}>
-        <div className={css.header}>
-          <h2>{note.title}</h2>
-          <span className={css.tag}>{note.tag}</span>
-        </div>
-        <div className={css.content}>
-          {note.content}
-        </div>
-        <div className={css.date}>
-          Created: {new Date(note.createdAt).toLocaleDateString()}
-        </div>
-      </div>
-    </div>
+    <ul className={css.menuList}>
+      <li className={css.menuItem}>
+        <Link href="/notes/filter/all" className={css.menuLink}>
+          All notes
+        </Link>
+      </li>
+      {TAGS.map((tag) => (
+        <li key={tag} className={css.menuItem}>
+          <Link href={`/notes/filter/${tag}`} className={css.menuLink}>
+            {tag}
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
-};
+}
 </file>
 
 <file path=".gitignore">
@@ -370,63 +283,42 @@ const NotFound = () => {
 export default NotFound;
 </file>
 
-<file path="app/notes/@modal/(..)notes/[id]/page.tsx">
-"use client";
-
-import { use } from "react";
-import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { fetchNoteById } from "@/lib/api";
-import { Modal } from "@/components/Modal/Modal";
-import { NotePreview } from "@/components/NotePreview/NotePreview";
-
-export default function NotePreviewModal({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter();
-
-  
-  const resolvedParams = use(params);
-  const id = resolvedParams.id;
-
-  const { data: note, isLoading, isError } = useQuery({
-    queryKey: ["note", id],
-    queryFn: () => fetchNoteById(id),
-    enabled: !!id,
-  });
-
-  return (
-    <Modal onClose={() => router.back()}>
-      {isLoading && <p>Завантаження...</p>}
-      {isError && <p>Помилка завантаження ID: {id}</p>}
-      {note && <NotePreview note={note} />}
-    </Modal>
-  );
+<file path="app/notes/@modal/default.tsx">
+export default function Default() {
+  return null;
 }
 </file>
 
-<file path="app/notes/layout.tsx">
-export default function NotesLayout({
+<file path="app/notes/@sidebar/default.tsx">
+import SidebarNotes from "@/components/SidebarNotes/SidebarNotes";
+
+export default function Default() {
+  return <SidebarNotes />;
+}
+</file>
+
+<file path="app/notes/default.tsx">
+import SidebarNotes from "@/components/SidebarNotes/SidebarNotes";
+
+export default function Default() {
+  return <SidebarNotes />;
+}
+</file>
+
+<file path="app/notes/filter/layout.tsx">
+import React from 'react';
+
+export default function FilterLayout({
   children,
-  modal,
-  sidebar, 
+  sidebar,
 }: {
   children: React.ReactNode;
-  modal: React.ReactNode;
   sidebar: React.ReactNode;
 }) {
   return (
-    <div style={{ display: 'flex', gap: '24px', padding: '20px' }}>
-      
-      <aside style={{ width: '250px', flexShrink: 0 }}>
-        {sidebar}
-      </aside>
-
-      
-      <main style={{ flex: 1 }}>
-        {children}
-      </main>
-
-      
-      {modal}
+    <div style={{ display: 'flex', gap: '20px' }}>
+      <aside style={{ width: '250px' }}>{sidebar}</aside>
+      <main style={{ flex: 1 }}>{children}</main>
     </div>
   );
 }
@@ -1027,6 +919,105 @@ const NoteList = ({ notes }: NoteListProps) => {
 export default NoteList;
 </file>
 
+<file path="components/NotePreview/NotePreview.module.css">
+.container {
+    max-width: 800px;
+    margin: 32px auto;
+    padding: 24px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.item {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 8px;
+}
+
+.header h2 {
+    margin: 0;
+    font-size: 28px;
+    color: #333;
+}
+
+.content {
+    font-size: 18px;
+    line-height: 26px;
+    color: #444;
+    white-space: pre-wrap;
+}
+
+.date {
+    font-size: 14px;
+    color: #888;
+    text-align: right;
+}
+
+.tag {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #0d6efd;
+    background-color: #e7f1ff;
+    border: 1px solid #b6d4fe;
+    border-radius: 12px;
+    max-width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.backBtn {
+    align-self: flex-start;
+    padding: 6px 12px;
+    font-size: 14px;
+    color: #000000;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: underline;
+    display: inline-block;
+    background-color: transparent;
+}
+</file>
+
+<file path="components/NotePreview/NotePreview.tsx">
+import { Note } from "@/types/note";
+import css from "./NotePreview.module.css";
+
+interface NotePreviewProps {
+  note: Note;
+}
+
+export const NotePreview = ({ note }: NotePreviewProps) => {
+  return (
+    <div className={css.container}>
+      <div className={css.item}>
+        <div className={css.header}>
+          <h2>{note.title}</h2>
+          <span className={css.tag}>{note.tag}</span>
+        </div>
+        <div className={css.content}>
+          {note.content}
+        </div>
+        <div className={css.date}>
+          Created: {new Date(note.createdAt).toLocaleDateString()}
+        </div>
+      </div>
+    </div>
+  );
+};
+</file>
+
 <file path="components/NotesPage/NotesPage.module.css">
 .app {
     width: 90%;
@@ -1443,6 +1434,39 @@ export default function Error({ error }: { error: Error }) {
 }
 </file>
 
+<file path="app/notes/@modal/(..)notes/[id]/page.tsx">
+"use client";
+
+import { use } from "react";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api";
+import { Modal } from "@/components/Modal/Modal";
+import { NotePreview } from "@/components/NotePreview/NotePreview";
+
+export default function NotePreviewModal({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
+
+  
+  const resolvedParams = use(params);
+  const id = resolvedParams.id;
+
+  const { data: note, isLoading, isError } = useQuery({
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
+    enabled: !!id,
+  });
+
+  return (
+    <Modal onClose={() => router.back()}>
+      {isLoading && <p>Завантаження...</p>}
+      {isError && <p>Помилка завантаження ID: {id}</p>}
+      {note && <NotePreview note={note} />}
+    </Modal>
+  );
+}
+</file>
+
 <file path="app/notes/error.tsx">
 "use client";
 export default function Error({ error, reset }: { error: Error; reset: () => void }) {
@@ -1450,6 +1474,30 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
     <div>
       <p>Could not fetch the data. {error.message}</p>
       <button onClick={() => reset()}>Try again</button>
+    </div>
+  );
+}
+</file>
+
+<file path="app/notes/layout.tsx">
+export default function NotesLayout({
+  children,
+  modal,
+  sidebar,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+  sidebar: React.ReactNode;
+}) {
+  return (
+    <div style={{ display: "flex", gap: "24px", padding: "20px" }}>
+      <aside style={{ width: "220px", flexShrink: 0 }}>
+        {sidebar}
+      </aside>
+      <main style={{ flex: 1 }}>
+        {children}
+      </main>
+      {modal}
     </div>
   );
 }
@@ -1489,6 +1537,46 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
 }
 </file>
 
+<file path="app/notes/page.tsx">
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
+import { fetchNotes } from "@/lib/api";
+import NotesClient from "./Notes.client";
+
+export default async function NotesPage() {
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    queryKey: ["notes", 1, "", undefined],
+    queryFn: () => fetchNotes(1, "", 12, undefined),
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <NotesClient />
+    </HydrationBoundary>
+  );
+}
+</file>
+
+<file path="app/page.tsx">
+import css from "./page.module.css";
+
+export default function HomePage() {
+  return (
+    <main>
+      <div className={css.container}>
+        <h1 className={css.title}>Welcome to NoteHub</h1>
+        <p className={css.description}>
+          NoteHub is a simple and efficient application designed for managing personal notes...
+        </p>
+        <p className={css.description}>
+          The app provides a clean interface for writing, editing, and browsing notes...
+        </p>
+      </div>
+    </main>
+  );
+}
+</file>
+
 <file path="components/Pagination/Pagination.tsx">
 "use client";
 
@@ -1497,24 +1585,21 @@ import css from './Pagination.module.css';
 
 interface PaginationProps {
   pageCount: number;
-  currentPage: number; 
+  currentPage: number;
   onPageChange: (selectedItem: { selected: number }) => void;
-
 }
 
-export const Pagination = ({ pageCount, currentPage, onPageChange}: PaginationProps) => {
+export const Pagination = ({ pageCount, currentPage, onPageChange }: PaginationProps) => {
   return (
     <ReactPaginate
-      forcePage={currentPage - 1} 
+      forcePage={currentPage - 1}
       pageCount={pageCount}
       onPageChange={onPageChange}
-      
       previousLabel="<"
       nextLabel=">"
       breakLabel="..."
       marginPagesDisplayed={2}
       pageRangeDisplayed={5}
-      
       containerClassName={css.pagination}
       activeClassName={css.active}
       pageClassName={css.pageItem}
@@ -1528,6 +1613,8 @@ export const Pagination = ({ pageCount, currentPage, onPageChange}: PaginationPr
     />
   );
 };
+
+export default Pagination;
 </file>
 
 <file path="app/notes/[id]/NoteDetails.client.tsx">
@@ -1559,122 +1646,6 @@ if (error || !note) return <p>Something went wrong.</p>;
     </div>
   );
 }
-</file>
-
-<file path="app/notes/page.tsx">
-import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
-import NotesClient from "./Notes.client";
-
-export default async function NotesPage() {
-  const queryClient = new QueryClient();
-  await queryClient.prefetchQuery({
-    queryKey: ["notes"],
-    queryFn: () => fetchNotes(),
-  });
-
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotesClient />
-    </HydrationBoundary>
-  );
-}
-</file>
-
-<file path="app/page.tsx">
-import css from "./page.module.css";
-
-export default function HomePage() {
-  return (
-    <main>
-      <div className={css.container}>
-        <h1 className={css.title}>Welcome to NoteHub</h1>
-        <p className={css.description}>
-          NoteHub is a simple and efficient application designed for managing personal notes...
-        </p>
-        <p className={css.description}>
-          The app provides a clean interface for writing, editing, and browsing notes...
-        </p>
-      </div>
-    </main>
-  );
-}
-</file>
-
-<file path="app/layout.tsx">
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-
-
-import TanStackProvider from "../components/TanStackProvider/TanStackProvider";
-import Header from "../components/Header/Header";
-import Footer from "../components/Footer/Footer";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "NoteHub",
-  description: "Simple and efficient application for managing personal notes",
-};
-
-export default function NotesLayout({
-  children,
-  modal,
-}: {
-  children: React.ReactNode;
-  modal: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <TanStackProvider>
-          <div className="app-wrapper">
-            <Header />
-            <main>{children}{modal}</main>
-            <Footer />
-          </div>
-        </TanStackProvider>
-      </body>
-    </html>
-  );
-}
-</file>
-
-<file path="lib/api.ts">
-import axios from 'axios';
-import { FetchNotesResponse } from '@/types/note';
-
-const getApi = () => {
-  return axios.create({
-    baseURL: 'https://notehub-public.goit.study/api', 
-  });
-};
-
-export const fetchNotes = async (
-  page: number = 1,
-  search: string = '',
-  perPage: number = 12,
-  tag?: string 
-): Promise<FetchNotesResponse> => {
-  const response = await getApi().get<FetchNotesResponse>('/notes', {
-    params: { 
-      page, 
-      perPage, 
-      search,
-      ...(tag && tag !== 'all' ? { tag } : {}) 
-    },
-  });
-  return response.data;
-};
 </file>
 
 <file path="package.json">
@@ -1713,98 +1684,26 @@ export const fetchNotes = async (
 }
 </file>
 
-<file path="types/note.ts">
-export type NoteTag = 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
-
-export interface Note {
-  id: string;
-  title: string;
-  content: string;
-  tag: NoteTag;
-  createdAt: string;
-  updatedAt: string;
-}
-</file>
-
-<file path="app/notes/[id]/page.tsx">
-"use client";
-
-import { use } from "react";
-
-
-export default function NotePage({ params }: { params: Promise<{ id: string }> }) {
-  
-  const resolvedParams = use(params);
-  const id = resolvedParams.id;
-
+<file path="app/layout.tsx">
+export default function NotesLayout({
+  children,
+  modal,
+  sidebar,
+}: {
+  children: React.ReactNode;
+  modal: React.ReactNode;
+  sidebar: React.ReactNode;
+}) {
   return (
-    <div className="p-10">
-      <h1>Сторінка нотатки: {id}</h1>
-      {/* Твій контент сторінки */}
+    <div style={{ display: "flex", gap: "24px", padding: "20px" }}>
+      <aside style={{ width: "220px", flexShrink: 0 }}>
+        {sidebar}
+      </aside>
+      <main style={{ flex: 1 }}>
+        {children}
+      </main>
+      {modal}
     </div>
-  );
-}
-</file>
-
-<file path="app/notes/Notes.client.tsx">
-"use client";
-
-import { useState, use } from "react"; 
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { useDebounce } from "use-debounce";
-import { fetchNotes } from "@/lib/api";
-import NoteCard from "@/components/NoteCard/NoteCard";
-import Pagination from "@/components/Pagination/Pagination";
-import SearchBar from "@/components/SearchBar/SearchBar";
-import css from "./Notes.module.css";
-
-// Спробуй цей максимально гнучкий інтерфейс
-interface NotesClientProps {
-  params: Promise<{ slug?: string[] }>;
-}
-
-export default function NotesClient({ params }: NotesClientProps) {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-
-  // Використовуємо use() для розпакування. 
-  // Якщо тут помилка — спробуй: const resolvedParams = use(params) as any;
-  const resolvedParams = use(params);
-  const tagFromUrl = resolvedParams?.slug?.[0];
-  const activeTag = tagFromUrl === 'all' ? undefined : tagFromUrl;
-
-  const [debouncedSearch] = useDebounce(search, 500);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["notes", page, debouncedSearch, activeTag], 
-    queryFn: () => fetchNotes(page, debouncedSearch, 12, activeTag),
-    placeholderData: keepPreviousData,
-  });
-
-  return (
-    <section className={css.container}>
-      <div className={css.controls}>
-        <SearchBar value={search} onChange={setSearch} />
-        <button className={css.addButton}>Add New Note</button>
-      </div>
-
-      {isLoading ? (
-        <p>Loading notes...</p>
-      ) : (
-        <>
-          <div className={css.grid}>
-            {data?.notes.map((note) => (
-              <NoteCard key={note.id} note={note} />
-            ))}
-          </div>
-          <Pagination
-            currentPage={page}
-            totalPages={data?.totalPages || 1}
-            onPageChange={setPage}
-          />
-        </>
-      )}
-    </section>
   );
 }
 </file>
@@ -1864,6 +1763,155 @@ export const Modal = ({ children, onClose }: ModalProps) => {
     modalRoot
   );
 };
+</file>
+
+<file path="lib/api.ts">
+import axios from "axios";
+import { FetchNotesResponse, Note } from "@/types/note";
+
+const getApi = () => {
+  return axios.create({
+    baseURL: "https://notehub-public.goit.study/api",
+    headers: {
+      Authorization: `Bearer ${process.env.NEXT_PUBLIC_NOTEHUB_TOKEN}`,
+    },
+  });
+};
+
+export const fetchNotes = async (
+  page: number = 1,
+  search: string = "",
+  perPage: number = 12,
+  tag?: string
+): Promise<FetchNotesResponse> => {
+  const response = await getApi().get<FetchNotesResponse>("/notes", {
+    params: {
+      page,
+      perPage,
+      search,
+      ...(tag && tag !== "all" ? { tag } : {}),
+    },
+  });
+  return response.data;
+};
+
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const response = await getApi().get<Note>(`/notes/${id}`);
+  return response.data;
+};
+
+export const createNote = async (
+  note: Omit<Note, "id" | "createdAt" | "updatedAt">
+): Promise<Note> => {
+  const response = await getApi().post<Note>("/notes", note);
+  return response.data;
+};
+
+export const deleteNote = async (id: string): Promise<void> => {
+  await getApi().delete(`/notes/${id}`);
+};
+</file>
+
+<file path="types/note.ts">
+export type NoteTag = 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
+
+export interface Note {
+  id: string;
+  title: string;
+  content: string;
+  tag: NoteTag;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FetchNotesResponse {
+  notes: Note[];
+  totalPages: number;
+}
+</file>
+
+<file path="app/notes/[id]/page.tsx">
+import NoteDetailsClient from "./NoteDetails.client";
+
+export default async function NotePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  return <NoteDetailsClient id={id} />;
+}
+</file>
+
+<file path="app/notes/Notes.client.tsx">
+"use client";
+
+import { useState, use } from "react";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
+import { fetchNotes } from "@/lib/api";
+import NoteList from "@/components/NoteList/NoteList";
+import Pagination from "@/components/Pagination/Pagination";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import { Modal } from "@/components/Modal/Modal";
+import NoteForm from "@/components/NoteForm/NoteForm";
+import css from "./Notes.module.css";
+
+interface NotesClientProps {
+  params?: Promise<{ slug?: string[] }>;
+}
+
+export default function NotesClient({ params }: NotesClientProps) {
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const resolvedParams = params ? use(params) : null;
+  const tagFromUrl = resolvedParams?.slug?.[0];
+  const activeTag = tagFromUrl === "all" ? undefined : tagFromUrl;
+
+  const [debouncedSearch] = useDebounce(search, 500);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["notes", page, debouncedSearch, activeTag],
+    queryFn: () => fetchNotes(page, debouncedSearch, 12, activeTag),
+    placeholderData: keepPreviousData,
+  });
+
+  return (
+    <section className={css.container}>
+      <div className={css.controls}>
+        <SearchBox value={search} onChange={setSearch} />
+        <button className={css.addButton} onClick={() => setIsModalOpen(true)}>
+          Add New Note
+        </button>
+      </div>
+
+      {isLoading ? (
+        <p>Loading notes...</p>
+      ) : (
+        <>
+          <NoteList notes={data?.notes ?? []} />
+          <Pagination
+            currentPage={page}
+            pageCount={data?.totalPages ?? 1}
+            onPageChange={(e) => setPage(e.selected + 1)}
+          />
+        </>
+      )}
+
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm
+            onCancel={() => setIsModalOpen(false)}
+            onSuccess={() => setIsModalOpen(false)}
+          />
+        </Modal>
+      )}
+    </section>
+  );
+}
 </file>
 
 <file path="components/NoteForm/NoteForm.tsx">
