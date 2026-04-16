@@ -30,7 +30,15 @@ export default function FilterNotesClient({ tag }: Props) {
   return (
     <section className={css.container}>
       <div className={css.controls}>
-        <SearchBox value={search} onChange={setSearch} />
+        
+<SearchBox
+  value={search}
+  onChange={(value) => {
+    setSearch(value);
+    setPage(1);
+  }}
+/>
+
         <button
           className={css.addButton}
           onClick={() => setIsModalOpen(true)}

@@ -16,7 +16,6 @@ export default function RootLayout({ children, modal }: Props) {
           <Header />
           {children}
           {modal}
-          <div id="modal-root" />
           <Footer />
         </TanStackProvider>
       </body>
